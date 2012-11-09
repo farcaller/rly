@@ -1,29 +1,15 @@
+[![Build Status](https://secure.travis-ci.org/farcaller/rly.png?branch=master)](http://travis-ci.org/farcaller/rly)
+
 # Rly
 
-TODO: Write a gem description
+Rly is a lexer and parser generator for ruby, based on ideas and solutions of Python's [Ply](http://www.dabeaz.com/ply/).
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Install via rubygems
 
-    gem 'rly'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install rly
+    gem install rly
 
 ## Usage
 
 TODO: Write usage instructions here
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
