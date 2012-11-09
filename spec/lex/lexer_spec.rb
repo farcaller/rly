@@ -78,10 +78,7 @@ describe Rly::Lex do
 
   context "Non-outputtable tokens Lexer" do
     testLexer = Class.new(Rly::Lex) do
-      token /\n+/ do |t|
-        t.lexer.lineno = t.value.count("\n")
-        t
-      end
+      token /\n+/ do |t| t.lexer.lineno = t.value.count("\n"); t end
     end
     
     it "process but don't output tokens without a name" do
