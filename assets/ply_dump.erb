@@ -1,0 +1,15 @@
+Created by PLY version 3.4 (http://www.dabeaz.com/ply)
+
+Grammar
+
+<% for p in g.productions %>Rule <%= sprintf("%-5d", p.index) %> <%= p %>
+<% end %>
+Terminals, with rules where they appear
+
+<% @t = g.terminals.keys.map {|k| k.to_s }.sort; for t in @t %><%= sprintf("%-20s : %s", t, (g.terminals[t] || g.terminals[t.to_sym]).join(' ')) %>
+<% end %>
+Nonterminals, with rules where they appear
+
+<% @t = g.nonterminals.keys.sort; for t in @t %><%= sprintf("%-20s : %s", t, g.nonterminals[t].join(' ')) %>
+<% end %>
+Parsing method: LALR
