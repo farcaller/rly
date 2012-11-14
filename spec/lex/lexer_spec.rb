@@ -119,13 +119,13 @@ describe Rly::Lex do
           t
         end
       end
-      l = testLexer.new("test")
+      l = testLexer.new("test").each
 
-      tok = l.to_enum.next
+      tok = l.next
       tok.value.should == "BAD t"
       tok.type.should == :error
 
-      tok = l.to_enum.next
+      tok = l.next
       tok.value.should == "BAD e"
       tok.type.should == :error
     end
