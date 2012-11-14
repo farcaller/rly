@@ -146,7 +146,7 @@ describe Rly::Grammar do
     it "should set zero rule to S' -> :start" do
       prod_0 = @g.productions[0]
       prod_0.index.should == 0
-      prod_0.name.should == "S'"
+      prod_0.name.should == :"S'"
       prod_0.prod.should == [:expression]
     end
 

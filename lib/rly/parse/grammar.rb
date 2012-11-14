@@ -75,7 +75,7 @@ module Rly
     def set_start(symbol=nil)
       symbol = @productions[1].name unless symbol
       raise ArgumentError unless @nonterminals[symbol]
-      @productions[0] = Production.new(0, "S'", [symbol])
+      @productions[0] = Production.new(0, :"S'", [symbol])
       @nonterminals[symbol] << 0
       @start = symbol
     end
