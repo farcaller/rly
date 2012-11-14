@@ -18,6 +18,10 @@ module Rly
       "#{name} -> #{@prod.map { |s| s.to_s }.join(' ')}"
     end
 
+    def inspect
+      "#<Production #{to_s}>"
+    end
+
     def length
       @prod.length
     end
