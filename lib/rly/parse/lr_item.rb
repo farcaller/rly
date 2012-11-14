@@ -17,6 +17,16 @@ module Rly
       @lr_next = nil
     end
     
-    
+    def to_s
+      if @prod
+        "#{@name} -> #{@prod.join(' ')}"
+      else
+        "#{@name} -> <empty>"
+      end
+    end
+
+    def inspect
+      "#<LRItem #{to_s}>"
+    end
   end
 end
