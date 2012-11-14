@@ -21,7 +21,7 @@ describe Rly::LRTable do
     @t = Rly::LRTable.new(@g)
   end
 
-  it "should compute the LR(0) closure operation on I, where I is a set of LR(0) items" do
+  it "computes the LR(0) closure operation on I, where I is a set of LR(0) items" do
     lr0_c = @t.send(:lr0_closure, [@g.productions[0].lr_next])
 
     lr0_c.length.should == @g.productions.length
@@ -30,7 +30,7 @@ describe Rly::LRTable do
     end
   end
 
-  it "should compute the LR(0) goto function goto(I,X) where I is a set of LR(0) items and X is a grammar symbol" do
+  it "computes the LR(0) goto function goto(I,X) where I is a set of LR(0) items and X is a grammar symbol" do
     lr0_c = @t.send(:lr0_closure, [@g.productions[0].lr_next])
 
     lr0_g = @t.send(:lr0_goto, lr0_c, :statement)
@@ -50,7 +50,7 @@ describe Rly::LRTable do
     lr0_g[2].prod.should == [:expression, :'.', '-', :expression]
   end
 
-  it "should compute the LR(0) sets of item function" do
+  it "computes the LR(0) sets of item function" do
     lr0_i = @t.send(:lr0_items)
 
     lr0_i.length.should == 1
