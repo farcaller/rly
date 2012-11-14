@@ -1,7 +1,7 @@
 module Rly
   class Production
     attr_reader :index, :name, :prod, :precedence, :block, :usyms
-    attr_accessor :lr_items, :lr_next
+    attr_accessor :lr_items, :lr_next, :lr0_added
 
     def initialize(index, name, prod, precedence=[:right, 0], block=nil)
       @index = index
@@ -24,6 +24,10 @@ module Rly
 
     def length
       @prod.length
+    end
+
+    def lr0_added
+      @lr0_added ||= 0
     end
   end
 end
