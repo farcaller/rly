@@ -158,55 +158,52 @@ describe Rly::Grammar do
   context "LR tables" do
     before :each do
       @g = Rly::Grammar.new([:NUMBER])
+
+      @g.set_precedence('+', :left, 1)
+      @g.set_precedence('-', :left, 1)
+
+      @g.add_production(:statement, [:expression])
       @g.add_production(:expression, [:expression, '+', :expression])
+      @g.add_production(:expression, [:expression, '-', :expression])
+      @g.add_production(:expression, [:NUMBER])
+
       @g.set_start
+
+      @g.build_lritems
     end
 
-    context "LR items" do
-      before :each do
-        @g.build_lritems
-      end
-
-      it "builds LR items for grammar" do
-        @g.productions[0].lr_items.count.should == 2
-        @g.productions[1].lr_items.count.should == 4
-      end
-
-      it "sets LR items to correct default values" do
-        i = @g.productions[0].lr_items[0]
-        i.lr_after.should == [@g.productions[1]]
-        i.prod.should == [:'.', :expression]
-
-        i = @g.productions[1].lr_items[0]
-        i.lr_after.should == [@g.productions[1]]
-        i.prod.should == [:'.', :expression, '+', :expression]
-      end
+    it "builds LR items for grammar" do
+      @g.productions[0].lr_items.count.should == 2
+      @g.productions[1].lr_items.count.should == 2
     end
 
-    context "FIRST(...)" do
-      before :each do
-        @g.build_lritems
-      end
+    it "sets LR items to correct default values" do
+      i = @g.productions[0].lr_items[0]
+      i.lr_after.should == [@g.productions[1]]
+      i.prod.should == [:'.', :statement]
 
-      it "builds correct FIRST table" do
-        first = @g.compute_first
-        first.should == {
-          :'$end' => [:'$end'], '+' => ['+'], :NUMBER => [:NUMBER],
-          :error => [:error], :expression => []
-        }
-      end
+      i = @g.productions[2].lr_items[0]
+      i.lr_after.should == @g.productions[2..4]
+      i.prod.should == [:'.', :expression, '+', :expression]
     end
 
-    context "FOLLOW(...)" do
-      before :each do
-        @g.build_lritems
-        @g.compute_first
-      end
+    it "builds correct FIRST table" do
+      first = @g.compute_first
+      first.should == {
+        :'$end' => [:'$end'],
+        '+' => ['+'],
+        '-' => ['-'],
+        :NUMBER => [:NUMBER],
+        :error => [:error],
+        :expression => [:NUMBER],
+        :statement => [:NUMBER]
+      }
+    end
 
-      it "builds correct FOLLOW table" do
-        follow = @g.compute_follow
-        follow.should == { :expression => [:'$end', '+'] }
-      end
+    it "builds correct FOLLOW table" do
+      @g.compute_first
+      follow = @g.compute_follow
+      follow.should == { :expression => [:'$end', '+', '-'], :statement => [:'$end'] }
     end
   end
 
