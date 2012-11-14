@@ -1,17 +1,17 @@
 require "rly"
 
 describe Rly::Lex do
-  context "Simple Lexer" do
+  context "Basic lexer" do
     testLexer = Class.new(Rly::Lex) do
       token :FIRST, /[a-z]+/
       token :SECOND, /[A-Z]+/
     end
 
-    it "should have a list of defined tokens" do
+    it "has a list of defined tokens" do
       testLexer.tokens.map { |t, r, b| t }.should == [:FIRST, :SECOND]
     end
 
-    it "should output tokens one by one" do
+    it "outputs tokens one by one" do
       test = 'qweASDzxc'
       l = testLexer.new(test).to_enum
 
@@ -31,12 +31,12 @@ describe Rly::Lex do
     end
   end
 
-  context "Literals Lexer" do
+  context "Lexer with literals defined" do
     testLexer = Class.new(Rly::Lex) do
       literals "+-*/"
     end
     
-    it "should output literal tokens" do
+    it "outputs literal tokens" do
       test = '++--'
       l = testLexer.new(test).to_enum
 
@@ -47,12 +47,12 @@ describe Rly::Lex do
     end
   end
 
-  context "Ignores Lexer" do
+  context "Lexer with ignores defined" do
     testLexer = Class.new(Rly::Lex) do
       ignore " \t"
     end
     
-    it "should honour ignores list" do
+    it "honours ignores list" do
       test = "     \t\t  \t    \t"
       l = testLexer.new(test).to_enum
 
@@ -60,7 +60,7 @@ describe Rly::Lex do
     end
   end
 
-  context "Block-based Token Lexer" do
+  context "Lexer with token that has a block given" do
     testLexer = Class.new(Rly::Lex) do
       token :TEST, /\d+/ do |t|
         t.value = t.value.to_i
@@ -76,12 +76,12 @@ describe Rly::Lex do
     end
   end
 
-  context "Non-outputtable tokens Lexer" do
+  context "Lexer with unnamed token and block given" do
     testLexer = Class.new(Rly::Lex) do
       token /\n+/ do |t| t.lexer.lineno = t.value.count("\n"); t end
     end
     
-    it "process but don't output tokens without a name" do
+    it "processes but don't output tokens without a name" do
       test = "\n\n\n"
       l = testLexer.new(test)
 
@@ -91,7 +91,7 @@ describe Rly::Lex do
     end
   end
 
-  context "Error handling" do
+  context "Lexer with no error handler" do
     it "raises an error, if there are no suitable tokens" do
       testLexer = Class.new(Rly::Lex) do
         token :NUM, /\d+/
@@ -107,7 +107,9 @@ describe Rly::Lex do
 
       expect { l.to_enum.next } .to raise_error(Rly::LexError)
     end
+  end
 
+  context "Lexer with error handler" do
     it "calls an error function if it is available, which returns a fixed token" do
       testLexer = Class.new(Rly::Lex) do
         token :NUM, /\d+/
