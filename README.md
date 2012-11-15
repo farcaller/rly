@@ -3,7 +3,7 @@
 # Rly
 
 Rly is a lexer and parser generator for ruby (O RLY?), based on ideas and solutions of
-Python's [Ply](http://www.dabeaz.com/ply/).
+Python's [Ply](http://www.dabeaz.com/ply/) (in some places it's a total rip off actually).
 
 ## Installation
 
