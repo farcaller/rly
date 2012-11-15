@@ -65,4 +65,44 @@ describe Rly::LRTable do
                                "\texpression -> . expression - expression" +
                                "\texpression -> . NUMBER"
   end
+
+  it "creates a dictionary containing all of the non-terminals that might produce an empty production." do
+    # TODO: write a better spec
+    @t.send(:compute_nullable_nonterminals).should == {}
+  end
+
+  it "finds all of the non-terminal transitions" do
+    lr0_i = @t.send(:lr0_items)
+    @t.send(:find_nonterminal_transitions, lr0_i).should == [[0, :statement], [0, :expression]]
+  end
+
+  it "computes the DR(p,A) relationships for non-terminal transitions" do
+    lr0_i = @t.send(:lr0_items)
+    nullable = @t.send(:compute_nullable_nonterminals)
+    trans = @t.send(:find_nonterminal_transitions, lr0_i)
+
+    @t.send(:dr_relation, lr0_i, trans[0], nullable).should == [:'$end']
+    @t.send(:dr_relation, lr0_i, trans[1], nullable).should == ['+', '-']
+  end
+
+  it "computes the READS() relation (p,A) READS (t,C)" do
+    # TODO: write a better spec
+    lr0_i = @t.send(:lr0_items)
+    nullable = @t.send(:compute_nullable_nonterminals)
+    trans = @t.send(:find_nonterminal_transitions, lr0_i)
+
+    @t.send(:reads_relation, lr0_i, trans[0], nullable).should == []
+    @t.send(:reads_relation, lr0_i, trans[1], nullable).should == []
+  end
+
+  it "computes the read sets given a set of LR(0) items" do
+    lr0_i = @t.send(:lr0_items)
+    nullable = @t.send(:compute_nullable_nonterminals)
+    trans = @t.send(:find_nonterminal_transitions, lr0_i)
+
+    @t.send(:compute_read_sets, lr0_i, trans, nullable).should == {
+      [0, :expression] => ['+', '-'],
+      [0, :statement]  => [:'$end']
+    }
+  end
 end

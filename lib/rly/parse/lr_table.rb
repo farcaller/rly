@@ -1,5 +1,7 @@
 module Rly
   class LRTable
+    MAXINT = (2**(0.size * 8 -2) -1)
+
     def initialize(grammar, method=:lalr)
       raise ArgumentError unless [:lalr, :slr].include?(method)
 
@@ -115,6 +117,128 @@ module Rly
         end
       end
       c
+    end
+
+    def compute_nullable_nonterminals
+      nullable = {}
+      num_nullable = 0
+      while true
+        @grammar.productions[1..-1].each do |p|
+          if p.length == 0
+            nullable[p.name] = 1
+            next
+          end
+          found_t = false
+          p.prod.each do |t|
+            unless nullable[t]
+              found_t = true
+              break
+            end
+          end
+          nullable[p.name] = 1 unless found_t
+        end
+        break if nullable.length == num_nullable
+        num_nullable = nullable.length
+      end
+      nullable
+    end
+
+    def find_nonterminal_transitions(c)
+      trans = []
+      c.each_with_index do |a, state|
+        a.each do |p|
+          if p.lr_index < p.length - 1
+            next_prod = p.prod[p.lr_index+1]
+            if @grammar.nonterminals[next_prod]
+              t = [state, next_prod]
+              trans << t unless trans.include?(t)
+            end
+          end
+        end
+      end
+      trans
+    end
+
+    def compute_read_sets(c, ntrans, nullable)
+      fp = lambda { |x| dr_relation(c, x, nullable) }
+      r = lambda { |x| reads_relation(c, x, nullable) }
+      digraph(ntrans, r, fp)
+    end
+
+    def dr_relation(c, trans, nullable)
+      dr_set = {}
+      state, n = trans
+      terms = []
+
+      g = lr0_goto(c[state], n)
+      g.each do |p|
+        if p.lr_index < p.length - 1
+          a = p.prod[p.lr_index+1]
+          if @grammar.terminals.include?(a)
+            terms << a unless terms.include?(a)
+          end
+        end
+      end
+
+      terms << :'$end' if state == 0 && n == @grammar.productions[0].prod[0]
+      
+      terms
+    end
+
+    def reads_relation(c, trans, empty)
+        rel = []
+        state, n = trans
+
+        g = lr0_goto(c[state], n)
+        j = @lr0_cidhash[g.hash] || -1
+        g.each do |p|
+          if p.lr_index < p.length - 1
+            a = p.prod[p.lr_index + 1]
+            rel << [j, a] if empty.include?(a)
+          end
+        end
+
+        rel
+    end
+
+    def digraph(x, r, fp)
+      n = {}
+      x.each { |xx| n[xx] = 0 }
+      stack = []
+      f = {}
+      x.each do |xx|
+        traverse(xx, n, stack, f, x, r, fp) if n[xx] == 0
+      end
+      f
+    end
+
+    def traverse(xx, n, stack, f, x, r, fp)
+      stack.push(xx)
+      d = stack.length
+      n[xx] = d
+      f[xx] = fp.call(xx)
+
+      rel = r.call(xx)
+      rel.each do |y|
+        traverse(y, n, stack, f, x, r, fp) if n[y] == 0
+        
+        n[xx] = [n[xx], n[y]].min
+
+        arr = f[y] || []
+        arr.each do |a|
+          f[xx] << a unless f[xx].include?(a)
+        end
+      end
+      if n[xx] == d
+        n[stack[-1]] = MAXINT
+        n[stack[-1]] = f[xx]
+        element = stack.pop()
+        while element != xx
+          n[stack[-1]] = MAXINT
+          f[stack[-1]] = f[xx]
+          element = stack.pop()
+        end
+      end
     end
   end
 end

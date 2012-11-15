@@ -1,7 +1,7 @@
 module Rly
   class LRItem
     attr_accessor :lr_after, :lr_before, :lr_next
-    attr_reader :prod, :name, :usyms
+    attr_reader :prod, :name, :usyms, :lr_index, :length
 
     def initialize(p, n)
       @name = p.name
@@ -10,7 +10,7 @@ module Rly
       @lr_index = n
       @lookaheads = {}
       @prod.insert(n, :'.')
-      @len = @prod.length
+      @length = @prod.length
       @usyms = p.usyms
 
       @lr_items = []
