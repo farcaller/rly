@@ -173,14 +173,21 @@ describe Rly::Grammar do
     end
 
     it "builds LR items for grammar" do
-      @g.productions[0].lr_items.count.should == 2
-      @g.productions[1].lr_items.count.should == 2
+      @g.productions.length.should == 5
+      items = [2, 2, 4, 4, 2]
+      @g.productions.each_with_index do |p, i|
+        p.lr_items.count.should == items[i]
+      end
     end
 
     it "sets LR items to correct default values" do
       i = @g.productions[0].lr_items[0]
       i.lr_after.should == [@g.productions[1]]
       i.prod.should == [:'.', :statement]
+
+      i = @g.productions[0].lr_items[1]
+      i.lr_after.should == []
+      i.prod.should == [:statement, :'.']
 
       i = @g.productions[2].lr_items[0]
       i.lr_after.should == @g.productions[2..4]
