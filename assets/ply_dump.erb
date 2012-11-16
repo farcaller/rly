@@ -12,4 +12,4 @@ Nonterminals, with rules where they appear
 
 <% @t = g.nonterminals.keys.sort; for t in @t %><%= sprintf("%-20s : %s", t, g.nonterminals[t].join(' ')) %>
 <% end %>
-Parsing method: LALR
+<%= backlog %>

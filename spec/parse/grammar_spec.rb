@@ -214,7 +214,8 @@ describe Rly::Grammar do
     end
   end
 
-  pending "should generate parser.out same as Ply does" do
+  it "should generate parser.out same as Ply does" do
+    pending "thx to python dicts we have a different order of states. ideas?"
     g = Rly::Grammar.new([:NUMBER])
 
     g.set_precedence('+', :left, 1)

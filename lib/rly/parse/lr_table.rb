@@ -1,17 +1,18 @@
 require "set"
+require "rly/parse/ply_dump"
 
 module Rly
   class LRTable
     MAXINT = (2**(0.size * 8 -2) -1)
 
-    def initialize(grammar, method=:lalr)
-      raise ArgumentError unless [:lalr, :slr].include?(method)
+    def initialize(grammar, method=:LALR)
+      raise ArgumentError unless [:LALR, :SLR].include?(method)
 
       @grammar = grammar
       @lr_method = method
 
-      @action = {}
-      @goto = {}
+      @lr_action = {}
+      @lr_goto = {}
       @lr_productions = grammar.productions
       @lr_goto_cache = {}
       @lr0_cidhash = {}
@@ -30,14 +31,212 @@ module Rly
       grammar.compute_follow
     end
 
-    private
-    def parse_table
+    def parse_table(log=PlyDump.stub)
       productions = @grammar.productions
       precedence = @grammar.precedence
 
       actionp = {}
 
+      log.info("Parsing method: %s", @lr_method)
+
       c = lr0_items
+
+      add_lalr_lookaheads(c) if @lr_method == :LALR
+
+      # Build the parser table, state by state
+      st = 0
+      c.each do |i|
+        # Loop over each production in I
+        actlist = []              # List of actions
+        st_action  = {}
+        st_actionp = {}
+        st_goto    = {}
+        log.info("")
+        log.info("state %d", st)
+        log.info("")
+        i.each { |p| log.info("    (%d) %s", p.index, p.to_s) }
+        log.info("")
+
+        i.each do |p|
+          if p.length == p.lr_index + 1
+            if p.name == :"S'"
+              # Start symbol. Accept!
+              st_action[:"$end"] = 0
+              st_actionp[:"$end"] = p
+            else
+              # We are at the end of a production.  Reduce!
+              if @lr_method == :LALR
+                laheads = p.lookaheads[st]
+              else
+                laheads = @grammar.follow[p.name]
+              end
+              laheads.each do |a|
+                actlist << [a, p, sprintf("reduce using rule %d (%s)", p.index, p)]
+                r = st_action[a]
+                if r
+                  # Whoa. Have a shift/reduce or reduce/reduce conflict
+                  if r > 0
+                    # Need to decide on shift or reduce here
+                    # By default we favor shifting. Need to add
+                    # some precedence rules here.
+                    sprec, slevel = productions[st_actionp[a].number].prec
+                    rprec, rlevel = precedence[a] || [:right, 0]
+                    if (slevel < rlevel) || ((slevel == rlevel) && (rprec == :left))
+                      # We really need to reduce here.
+                      st_action[a] = -p.number
+                      st_actionp[a] = p
+                      if ! slevel && ! rlevel
+                        log.info("  ! shift/reduce conflict for %s resolved as reduce",a)
+                        @sr_conflicts << [st, a, 'reduce']
+                      end
+                      productions[p.number].reduced += 1
+                    elsif (slevel == rlevel) && (rprec == :nonassoc)
+                      st_action[a] = nil
+                    else
+                      # Hmmm. Guess we'll keep the shift
+                      unless rlevel
+                        log.info("  ! shift/reduce conflict for %s resolved as shift",a)
+                        @sr_conflicts << [st,a,'shift']
+                      end
+                    end
+                  elsif r < 0
+                      # Reduce/reduce conflict.   In this case, we favor the rule
+                      # that was defined first in the grammar file
+                      oldp = productions[-r]
+                      pp = productions[p.number]
+                      if oldp.line > pp.line
+                        st_action[a] = -p.number
+                        st_actionp[a] = p
+                        chosenp = pp
+                        rejectp = oldp
+                        productions[p.number].reduced += 1
+                        productions[oldp.number].reduced -= 1
+                      else
+                        chosenp,rejectp = oldp,pp
+                      end
+                      @rr_conflicts << [st, chosenp, rejectp]
+                      log.info("  ! reduce/reduce conflict for %s resolved using rule %d (%s)", a, st_actionp[a].number, st_actionp[a])
+                  else
+                    raise RuntimeError("Unknown conflict in state #{st}")
+                  end
+                else
+                  st_action[a] = -p.index
+                  st_actionp[a] = p
+                  productions[p.index].reduced += 1
+                end
+              end
+            end
+          else # <-- level ok
+            # i = p.lr_index
+            a = p.prod[p.lr_index+1]       # Get symbol right after the "."
+            if @grammar.terminals.include?(a)
+              g = lr0_goto(i, a)
+              j = @lr0_cidhash[g.hash] || -1
+              if j >= 0
+                # We are in a shift state
+                actlist << [a, p, sprintf("shift and go to state %d", j)]
+                r = st_action[a]
+                if r
+                  # Whoa have a shift/reduce or shift/shift conflict
+                  if r > 0
+                    if r != j
+                      raise RuntimeError("Shift/shift conflict in state #{st}")
+                    end
+                  elsif r < 0
+                    # Do a precedence check.
+                    #   -  if precedence of reduce rule is higher, we reduce.
+                    #   -  if precedence of reduce is same and left assoc, we reduce.
+                    #   -  otherwise we shift
+                    rprec, rlevel = productions[st_actionp[a].index].precedence
+                    sprec, slevel = precedence[a] || [:right, 0]
+                    if (slevel > rlevel) || ((slevel == rlevel) && (rprec == :right))
+                      # We decide to shift here... highest precedence to shift
+                      productions[st_actionp[a].index].reduced -= 1
+                      st_action[a] = j
+                      st_actionp[a] = p
+                      unless rlevel
+                        log.info("  ! shift/reduce conflict for %s resolved as shift",a)
+                        @sr_conflicts << [st, a, 'shift']
+                      end
+                    elsif (slevel == rlevel) && (rprec == :nonassoc)
+                      st_action[a] = nil
+                    else
+                      # Hmmm. Guess we'll keep the reduce
+                      if ! slevel && ! rlevel
+                        log.info("  ! shift/reduce conflict for %s resolved as reduce",a)
+                        @sr_conflicts << [st, a, 'reduce']
+                      end
+                    end
+                  else
+                    raise RuntimeError("Unknown conflict in state #{st}")
+                  end
+                else
+                  st_action[a] = j
+                  st_actionp[a] = p
+                end
+              end
+            end
+          end
+        end
+
+        # Print the actions associated with each terminal
+        _actprint = {}
+        actlist.each do |a, p, m|
+          if st_action[a]
+            if p == st_actionp[a]
+              log.info("    %-15s %s",a,m)
+              _actprint[[a,m]] = 1
+            end
+          end
+        end
+        log.info("")
+        # Print the actions that were not used. (debugging)
+        not_used = false
+        actlist.each do |a, p, m|
+          if st_action[a]
+            unless p == st_actionp[a]
+              unless _actprint[[a,m]]
+                log.debug("  ! %-15s [ %s ]", a, m)
+                not_used = true
+                _actprint[[a,m]] = 1
+              end
+            end
+          end
+        end
+        log.debug("") if not_used
+
+        # Construct the goto table for this state
+
+        nkeys = {}
+        i.each do |ii|
+          ii.usyms.each do |s|
+            nkeys[s] = nil if @grammar.nonterminals.include?(s)
+          end
+        end
+        nkeys.each do |n, _|
+          g = lr0_goto(i, n)
+          j = @lr0_cidhash[g.hash] || -1
+          if j >= 0
+            st_goto[n] = j
+            log.info("    %-30s shift and go to state %d",n,j)
+          end
+        end
+
+        @lr_action[st] = st_action
+        actionp[st] = st_actionp
+        @lr_goto[st] = st_goto
+        st += 1
+      end
+    end
+
+    private
+    def add_lalr_lookaheads(c)
+      nullable = compute_nullable_nonterminals
+      trans = find_nonterminal_transitions(c)
+      readsets = compute_read_sets(c, trans, nullable)
+      lookd, included = compute_lookback_includes(c, trans, nullable)
+      followsets = compute_follow_sets(trans, readsets, included)
+      add_lookaheads(lookd, followsets)
     end
 
     def lr0_closure(i)

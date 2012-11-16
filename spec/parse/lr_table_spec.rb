@@ -192,7 +192,8 @@ describe Rly::LRTable do
     end
   end
 
-  pending "attaches the lookahead symbols to grammar rules" do
+  it "attaches the lookahead symbols to grammar rules" do
+    pending "verify that values in LRItem#lookaheads are meaningful"
     @t.instance_eval do
       lr0_i = lr0_items
       nullable = compute_nullable_nonterminals
@@ -202,7 +203,10 @@ describe Rly::LRTable do
       followsets = compute_follow_sets(trans, readsets, included)
 
       add_lookaheads(lookd, followsets)
-      # FIXME: verify that values in LRItem#lookaheads are meaningful
     end
+  end
+
+  it "parses the table" do
+    expect { @t.parse_table } .not_to raise_error
   end
 end

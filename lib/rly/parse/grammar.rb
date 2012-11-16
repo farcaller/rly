@@ -3,7 +3,7 @@ require "rly/parse/lr_item"
 
 module Rly
   class Grammar
-    attr_reader :terminals, :nonterminals, :productions, :prodnames, :start
+    attr_reader :terminals, :nonterminals, :productions, :prodnames, :start, :precedence
 
     def initialize(terminals)
       @productions = [nil]
