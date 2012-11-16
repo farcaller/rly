@@ -105,6 +105,7 @@ module Rly
         self.class.tokens.each do |type, rule, block|
           m = rule.match(@input, @pos)
           next unless m
+          next unless m.begin(0) == @pos
 
           tok = LexToken.new(type, m[0], self)
 

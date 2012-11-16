@@ -143,4 +143,14 @@ describe Rly::Lex do
       l.to_enum.next.value.should == '1'
     end
   end
+
+  it "doesn't try to skip chars over" do
+    testLexer = Class.new(Rly::Lex) do
+        token :NUM, /\d+/
+        literals ","
+      end
+      l = testLexer.new(",10")
+
+      l.to_enum.to_a.map { |t| t.type } .should == [',', :NUM]
+  end
 end
