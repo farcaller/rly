@@ -1,3 +1,5 @@
+require "set"
+
 module Rly
   class LRTable
     MAXINT = (2**(0.size * 8 -2) -1)
@@ -105,8 +107,8 @@ module Rly
         c_i = c[i]
         i += 1
 
-        asyms = {}
-        c_i.each { |ii| ii.usyms.each { |s| asyms[s] = nil } }
+        asyms = Set.new
+        c_i.each { |ii| ii.usyms.each { |s| asyms << s } }
 
         asyms.each do |x|
           g = lr0_goto(c_i, x)
