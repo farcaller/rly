@@ -122,5 +122,87 @@ describe Rly::LRTable do
       }
     end
   end
+
+  it "determines the lookback and includes relations" do
+    @t.instance_eval do
+      lr0_i = lr0_items
+      nullable = compute_nullable_nonterminals
+      trans = find_nonterminal_transitions(lr0_i)
+
+      lookd, included = compute_lookback_includes(lr0_i, trans, nullable)
+
+      included.should == {
+        [5, :expression] => [ [0, :expression], [4, :expression], [5, :expression], [5, :expression] ],
+        [4, :expression] => [ [0, :expression], [4, :expression], [4, :expression], [5, :expression] ],
+        [0, :expression] => [ [0, :statement] ]
+      }
+
+      lookd = lookd.each_with_object({}) { |(k, v), h| h[k] = v.map { |n,i| [n, i.to_s] } }
+      
+      # NOTE: this one goes not map 1-1 to pry as we have differencies in lr0_items order. Looks valid though.
+      expected = {
+        [0, :statement] => [ [2, "statement -> expression ."] ],
+        [0, :expression]=> [
+          [6, "expression -> expression + expression ."],
+          [6, "expression -> expression . + expression"],
+          [6, "expression -> expression . - expression"],
+          [7, "expression -> expression - expression ."],
+          [7, "expression -> expression . + expression"],
+          [7, "expression -> expression . - expression"],
+          [3, "expression -> NUMBER ."]
+        ],
+        [4, :expression] => [
+        [6, "expression -> expression + expression ."],
+          [6, "expression -> expression . + expression"],
+          [6, "expression -> expression . - expression"],
+          [7, "expression -> expression - expression ."],
+          [7, "expression -> expression . + expression"],
+          [7, "expression -> expression . - expression"],
+          [3, "expression -> NUMBER ."]
+        ],
+        [5, :expression] => [
+          [6, "expression -> expression + expression ."],
+          [6, "expression -> expression . + expression"],
+          [6, "expression -> expression . - expression"],
+          [7, "expression -> expression - expression ."],
+          [7, "expression -> expression . + expression"],
+          [7, "expression -> expression . - expression"],
+          [3, "expression -> NUMBER ."]
+        ]}
+
+      lookd.should == expected
+
+    end
+  end
+
+  it "computes the follow sets given a set of LR(0) items, a set of non-terminal transitions, a readset, and an include set" do
+    @t.instance_eval do
+      lr0_i = lr0_items
+      nullable = compute_nullable_nonterminals
+      trans = find_nonterminal_transitions(lr0_i)
+      readsets = compute_read_sets(lr0_i, trans, nullable)
+      lookd, included = compute_lookback_includes(lr0_i, trans, nullable)
+
+      compute_follow_sets(trans, readsets, included).should == {
+        [0, :statement] => [:'$end'],
+        [5, :expression] => ['+', '-', :'$end'],
+        [4, :expression] => ['+', '-', :'$end'],
+        [0, :expression] => ['+', '-', :'$end']
+      }
+    end
+  end
+
+  pending "attaches the lookahead symbols to grammar rules" do
+    @t.instance_eval do
+      lr0_i = lr0_items
+      nullable = compute_nullable_nonterminals
+      trans = find_nonterminal_transitions(lr0_i)
+      readsets = compute_read_sets(lr0_i, trans, nullable)
+      lookd, included = compute_lookback_includes(lr0_i, trans, nullable)
+      followsets = compute_follow_sets(trans, readsets, included)
+
+      add_lookaheads(lookd, followsets)
+      # FIXME: verify that values in LRItem#lookaheads are meaningful
+    end
   end
 end

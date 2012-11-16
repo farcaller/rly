@@ -242,5 +242,87 @@ module Rly
         end
       end
     end
+
+    def compute_lookback_includes(c, trans, nullable)
+      lookdict = {}
+      includedict = {}
+
+      dtrans = trans.each_with_object({}) { |k, h| h[k] = 1 }
+
+      trans.each do |state, n|
+        lookb = []
+        includes = []
+        c[state].each do |p|
+          next unless p.name == n
+
+          lr_index = p.lr_index
+          j = state
+          while lr_index < p.length - 1
+            lr_index = lr_index + 1
+            t = p.prod[lr_index]
+
+            if dtrans.include?([j,t])
+              li = lr_index + 1
+              escaped = false
+              while li < p.length
+                if @grammar.terminals[p.prod[li]]
+                  escaped = true
+                  break
+                end
+                unless nullable[p.prod[li]]
+                  escaped = true
+                  break
+                end
+                li = li + 1
+              end
+              includes << [j,t] unless escaped
+            end
+
+            g = lr0_goto(c[j],t)
+            j = @lr0_cidhash[g.hash] || -1
+          end
+
+          c[j].each do |r|
+            next unless r.name == p.name
+            next unless r.length == p.length
+            i = 0
+            escaped = false
+            while i < r.lr_index
+              unless r.prod[i] == p.prod[i+1]
+                escaped = true
+                break
+              end
+              i = i + 1
+            end
+            lookb << [j,r] unless escaped
+          end
+        end
+        includes.each do |i|
+          includedict[i] = [] unless includedict[i]
+          includedict[i] << [state, n]
+        end
+        lookdict[[state,n]] = lookb
+      end
+
+      [lookdict, includedict]
+    end
+
+    def compute_follow_sets(ntrans, readsets, inclsets)
+      fp = lambda { |x| readsets[x] }
+      r  = lambda { |x| inclsets[x] || [] }
+      digraph(ntrans, r, fp)
+    end
+
+    def add_lookaheads(lookbacks, followset)
+      lookbacks.each do |trans, lb|
+        lb.each do |state, p|
+          p.lookaheads[state] = [] unless p.lookaheads[state]
+          f = followset[trans] || []
+          f.each do |a|
+            p.lookaheads[state] << a unless p.lookaheads[state].include?(a)
+          end
+        end
+      end
+    end
   end
 end

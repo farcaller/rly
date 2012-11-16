@@ -1,7 +1,7 @@
 module Rly
   class LRItem
     attr_accessor :lr_after, :lr_before, :lr_next
-    attr_reader :prod, :name, :usyms, :lr_index, :length
+    attr_reader :prod, :name, :usyms, :lr_index, :length, :lookaheads
 
     def initialize(p, n)
       @name = p.name
