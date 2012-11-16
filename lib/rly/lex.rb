@@ -145,6 +145,9 @@ module Rly
     end
 
     class << self
+      def terminals
+        self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a
+      end
       # Returns the list of registered tokens
       #
       # @api private

@@ -29,6 +29,10 @@ describe Rly::Lex do
 
       expect { l.next } .to raise_error(StopIteration)
     end
+
+    it "provides tokens in terminals list" do
+      testLexer.terminals.should == [:FIRST, :SECOND]
+    end
   end
 
   context "Lexer with literals defined" do
@@ -44,6 +48,10 @@ describe Rly::Lex do
       l.next.value.should == '+'
       l.next.value.should == '-'
       l.next.value.should == '-'
+    end
+
+    it "provides literals in terminals list" do
+      testLexer.terminals.should == ['+', '-', '*', '/']
     end
   end
 
