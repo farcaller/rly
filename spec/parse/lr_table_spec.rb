@@ -53,17 +53,17 @@ describe Rly::LRTable do
   it "computes the LR(0) sets of item function" do
     lr0_i = @t.send(:lr0_items)
 
-    lr0_i.length.should == 1
-    items = lr0_i[0].map do |i|
-      i.should be_kind_of(Rly::LRItem)
-      i.to_s
-    end
+    reflist = Set.new(["S' -> . statement|statement -> . expression|expression -> . expression + expression|expression -> . expression - expression|expression -> . NUMBER",
+      "S' -> statement .",
+      "statement -> expression .|expression -> expression . + expression|expression -> expression . - expression",
+      "expression -> NUMBER .",
+      "expression -> expression + . expression|expression -> . expression + expression|expression -> . expression - expression|expression -> . NUMBER",
+      "expression -> expression - . expression|expression -> . expression + expression|expression -> . expression - expression|expression -> . NUMBER",
+      "expression -> expression + expression .|expression -> expression . + expression|expression -> expression . - expression",
+      "expression -> expression - expression .|expression -> expression . + expression|expression -> expression . - expression"])
 
-    items.join("\t").should == "S' -> . statement" +
-                               "\tstatement -> . expression" +
-                               "\texpression -> . expression + expression" +
-                               "\texpression -> . expression - expression" +
-                               "\texpression -> . NUMBER"
+    lr0_i.length.should == reflist.length
+    Set.new(lr0_i.map { |a| a.map { |k| k.to_s } .join('|') }).inspect .should == reflist.inspect
   end
 
   it "creates a dictionary containing all of the non-terminals that might produce an empty production." do
@@ -73,7 +73,7 @@ describe Rly::LRTable do
 
   it "finds all of the non-terminal transitions" do
     lr0_i = @t.send(:lr0_items)
-    @t.send(:find_nonterminal_transitions, lr0_i).should == [[0, :statement], [0, :expression]]
+    @t.send(:find_nonterminal_transitions, lr0_i).should == [[0, :statement], [0, :expression], [4, :expression], [5, :expression]]
   end
 
   it "computes the DR(p,A) relationships for non-terminal transitions" do
@@ -101,8 +101,10 @@ describe Rly::LRTable do
     trans = @t.send(:find_nonterminal_transitions, lr0_i)
 
     @t.send(:compute_read_sets, lr0_i, trans, nullable).should == {
-      [0, :expression] => ['+', '-'],
-      [0, :statement]  => [:'$end']
+      [0, :statement]  => [:'$end'],
+      [5, :expression] => ['+', '-'],
+      [4, :expression] => ['+', '-'],
+      [0, :expression] => ['+', '-']
     }
   end
 end
