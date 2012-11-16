@@ -233,7 +233,7 @@ module Rly
       end
       if n[xx] == d
         n[stack[-1]] = MAXINT
-        n[stack[-1]] = f[xx]
+        f[stack[-1]] = f[xx]
         element = stack.pop()
         while element != xx
           n[stack[-1]] = MAXINT
