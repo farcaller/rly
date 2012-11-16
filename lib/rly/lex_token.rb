@@ -9,5 +9,13 @@ module Rly
       @value = value
       @lexer = lexer
     end
+
+    def to_s
+      @value.to_s
+    end
+
+    def inspect
+      "#<LexToken #{@type} '#{@value}'>"
+    end
   end
 end
