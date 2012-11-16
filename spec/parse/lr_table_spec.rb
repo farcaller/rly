@@ -24,7 +24,7 @@ describe Rly::LRTable do
   it "computes the LR(0) closure operation on I, where I is a set of LR(0) items" do
     lr0_c = @t.send(:lr0_closure, [@g.productions[0].lr_next])
 
-    lr0_c.length.should == @g.productions.length
+    lr0_c.length.should == 5
     lr0_c.length.times do |i|
       lr0_c[i].should == @g.productions[i].lr_next
     end
