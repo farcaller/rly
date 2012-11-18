@@ -12,19 +12,6 @@ describe Rly::Yacc do
       } .not_to raise_error
   end
 
-  it "creates a grammar on first class instantiation" do
-    pending "implement full grammar-parsing stack"
-    testParser = Class.new(Rly::Yacc) do
-      rule 'statement : VALUE' do |v|
-        @val = v
-      end
-    end
-    testParser.grammar.should be_nil
-    p = testParser.new(double(Rly::Lex))
-    testParser.grammar.should_not be_nil
-    testParser.grammar.should be_kind_of(Rly::Grammar)
-  end
-
   it "accepts an instance of lexer as an argument" do
     testParser = Class.new(Rly::Yacc) do
       rule 'statement : VALUE' do |v|
@@ -32,7 +19,10 @@ describe Rly::Yacc do
       end
     end
     
-    m = double('lexer')
+    testLexer = Class.new(Rly::Lex) do
+      token :VALUE, /[a-z]+/
+    end
+    m = testLexer.new
 
     expect {
       p = testParser.new(m)
@@ -43,7 +33,7 @@ describe Rly::Yacc do
   it "can use built in lexer if one is defined" do
     testParser = Class.new(Rly::Yacc) do
       lexer do
-        token :FIRST, /[a-z]+/
+        token :VALUE, /[a-z]+/
       end
 
       rule 'statement : VALUE' do |v|
