@@ -198,7 +198,7 @@ module Rly
           # first syntax error.  This function is only called if
           # errorcount == 0.
           if errorcount == 0 || @errorok == true
-            errorcount = error_count
+            errorcount = self.class.error_count
             @errorok = false
             errtoken = lookahead
             errtoken = nil if errtoken.type == :"$end"
