@@ -1,10 +1,10 @@
 require "rly"
 require "rly/parse/grammar"
 
-describe Rly::Parse do
+describe Rly::Yacc do
   it "acceps a set of rules" do
     expect {
-      Class.new(Rly::Parse) do
+      Class.new(Rly::Yacc) do
         rule 'statement : expression' do |e|
           @val = e
         end
@@ -14,7 +14,7 @@ describe Rly::Parse do
 
   it "creates a grammar on first class instantiation" do
     pending "implement full grammar-parsing stack"
-    testParser = Class.new(Rly::Parse) do
+    testParser = Class.new(Rly::Yacc) do
       rule 'statement : VALUE' do |v|
         @val = v
       end
@@ -26,7 +26,7 @@ describe Rly::Parse do
   end
 
   it "accepts an instance of lexer as an argument" do
-    testParser = Class.new(Rly::Parse) do
+    testParser = Class.new(Rly::Yacc) do
       rule 'statement : VALUE' do |v|
         @val = v
       end
@@ -41,7 +41,7 @@ describe Rly::Parse do
   end
 
   it "can use built in lexer if one is defined" do
-    testParser = Class.new(Rly::Parse) do
+    testParser = Class.new(Rly::Yacc) do
       lexer do
         token :FIRST, /[a-z]+/
       end
@@ -56,7 +56,7 @@ describe Rly::Parse do
   end
 
   it "raises error if no lexer is built in and no given" do
-    testParser = Class.new(Rly::Parse) do
+    testParser = Class.new(Rly::Yacc) do
       rule 'statement : VALUE' do |v|
         @val = v
       end
