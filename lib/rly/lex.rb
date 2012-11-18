@@ -12,10 +12,10 @@ module Rly
   # configuration (check the methods documentation for details).
   #
   # Once you got your lexer configured, you can create its instances passing a
-  # String to be tokenized. You can then use either {#each} method or common
-  # *Enumerable* methods to get the processed tokens.
+  # String to be tokenized. You can then use {#next} method to get tokens. If you
+  # have more string to tokenize, you can append it to input buffer at any time with
+  # {#input}.
   class Lex
-    include Enumerable
 
     # Tracks the current line number for generated tokens
     #
@@ -55,21 +55,46 @@ module Rly
     #   end
     #
     #   lex = MyLexer.new("hello WORLD")
-    #   lex.each do |tok|
-    #     puts "#{tok.type} -> #{tok.value}" #=> "LOWERS -> hello"
-    #                                        #=> "UPPERS -> WORLD"
-    #   end
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "LOWERS -> hello"
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "UPPERS -> WORLD"
+    #   t = lex.next # => nil
     def initialize(input="")
       @input = input
       @pos = 0
       @lineno = 0
     end
 
+    def inspect
+      "#<#{self.class} pos=#{@pos} len=#{@input.length} lineno=#{@lineno}>"
+    end
+
+    # Appends string to input buffer
+    #
+    # The given string is appended to input buffer, further {#next} calls will
+    # tokenize it as usual.
+    #
+    # @api public
+    #
+    # @example
+    #   lex = MyLexer.new("hello")
+    #
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "LOWERS -> hello"
+    #   t = lex.next # => nil
+    #   lex.input("WORLD")
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "UPPERS -> WORLD"
+    #   t = lex.next # => nil
+    def input(input)
+      @input << input
+    end
+
     # Processes the next token in input
     #
-    # This is the main interface to lexer. If block is given, {#each} behaves like
-    # an usual enumerator, yielding the next token. If there is no block, {#each}
-    # returns an Enumerator object.
+    # This is the main interface to lexer. It returns next available token or **nil**
+    # if there are no more tokens available in the input string.
     #
     # {#each} Raises {LexError} if the input cannot be processed. This happens if
     # there were no matches by 'token' rules and no matches by 'literals' rule.
@@ -78,23 +103,19 @@ module Rly
     # after returning from error handler is still unchanged.
     #
     # @api public
-    # @yieldparam tok [LexToken] next processed token
     # @raise [LexError] if the input cannot be processed
-    # @return [Enumerator] if block is not given
-    # @return [nil] if block is given
+    # @return [LexToken] if the next chunk of input was processed successfully
+    # @return [nil] if there are no more tokens available in input
     #
     # @example
     #   lex = MyLexer.new("hello WORLD")
     #
-    #   lex.each #=> #<Enumerator: ...>
-    #
-    #   lex.each do |tok|
-    #     puts "#{tok.type} -> #{tok.value}" #=> "LOWERS -> hello"
-    #                                        #=> "UPPERS -> WORLD"
-    #   end
-    def each
-      return self.to_enum unless block_given?
-
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "LOWERS -> hello"
+    #   t = lex.next
+    #   puts "#{tok.type} -> #{tok.value}" #=> "UPPERS -> WORLD"
+    #   t = lex.next # => nil
+    def next
       while @pos < @input.length
         if self.class.ignores_list[@input[@pos]]
           @pos += 1
@@ -112,9 +133,10 @@ module Rly
           matched = true
 
           tok = block.call(tok) if block
-          yield tok if tok.type
 
           @pos = m.end(0)
+
+          return tok if tok.type
         end
 
         unless matched
@@ -122,8 +144,10 @@ module Rly
             tok = LexToken.new(@input[@pos], @input[@pos], self)
 
             matched = true
-            yield tok
+
             @pos += 1
+
+            return tok
           end
         end
 
@@ -135,13 +159,14 @@ module Rly
             if pos == @pos
               raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
             else
-              yield tok if tok && tok.type
+              return tok if tok && tok.type
             end
           else
             raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
           end
         end
       end
+      return nil
     end
 
     class << self

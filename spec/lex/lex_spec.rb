@@ -13,7 +13,7 @@ describe Rly::Lex do
 
     it "outputs tokens one by one" do
       test = 'qweASDzxc'
-      l = testLexer.new(test).to_enum
+      l = testLexer.new(test)
 
       tok = l.next
       tok.type.should == :FIRST
@@ -27,7 +27,7 @@ describe Rly::Lex do
       tok.type.should == :FIRST
       tok.value.should == 'zxc'
 
-      expect { l.next } .to raise_error(StopIteration)
+      l.next.should be_nil
     end
 
     it "provides tokens in terminals list" do
@@ -42,7 +42,7 @@ describe Rly::Lex do
     
     it "outputs literal tokens" do
       test = '++--'
-      l = testLexer.new(test).to_enum
+      l = testLexer.new(test)
 
       l.next.value.should == '+'
       l.next.value.should == '+'
@@ -62,9 +62,9 @@ describe Rly::Lex do
     
     it "honours ignores list" do
       test = "     \t\t  \t    \t"
-      l = testLexer.new(test).to_enum
+      l = testLexer.new(test)
 
-      expect { l.next } .to raise_error(StopIteration)
+      l.next.should be_nil
     end
   end
 
@@ -78,9 +78,9 @@ describe Rly::Lex do
     
     it "calls a block to further process a token" do
       test = "42"
-      l = testLexer.new(test).to_enum
+      l = testLexer.new(test)
 
-      l.next.value == 42
+      l.next.value.should == 42
     end
   end
 
@@ -93,7 +93,7 @@ describe Rly::Lex do
       test = "\n\n\n"
       l = testLexer.new(test)
 
-      expect { l.to_enum.next } .to raise_error(StopIteration)
+      l.next.should be_nil
 
       l.lineno.should == 3
     end
@@ -106,14 +106,14 @@ describe Rly::Lex do
       end
       l = testLexer.new("test")
 
-      expect { l.to_enum.next } .to raise_error(Rly::LexError)
+      expect { l.next } .to raise_error(Rly::LexError)
     end
 
     it "raises an error, if there is no possible tokens defined" do
       testLexer = Class.new(Rly::Lex) do ; end
       l = testLexer.new("test")
 
-      expect { l.to_enum.next } .to raise_error(Rly::LexError)
+      expect { l.next } .to raise_error(Rly::LexError)
     end
   end
 
@@ -127,7 +127,7 @@ describe Rly::Lex do
           t
         end
       end
-      l = testLexer.new("test").each
+      l = testLexer.new("test")
 
       tok = l.next
       tok.value.should == "BAD t"
@@ -148,7 +148,7 @@ describe Rly::Lex do
       end
       l = testLexer.new("test1")
 
-      l.to_enum.next.value.should == '1'
+      l.next.value.should == '1'
     end
   end
 
@@ -159,6 +159,7 @@ describe Rly::Lex do
       end
       l = testLexer.new(",10")
 
-      l.to_enum.to_a.map { |t| t.type } .should == [',', :NUM]
+      l.next.type.should == ','
+      l.next.type.should == :NUM
   end
 end
