@@ -16,3 +16,9 @@ Install via rubygems
 You need to create lexer and parser classes for each grammar you want to process.
 It is commonly done by subclassing {Rly::Lex} and {Rly::Parse} classes (check the
 appropriate docs).
+
+You can also read the tutorials on the wiki:
+
+ * [Calculator Tutorial Part 1: Basic lexer](https://github.com/farcaller/rly/wiki/Calculator-Tutorial-Part-1:-Basic-lexer)
+ * [Calculator Tutorial Part 2: Basic parser](https://github.com/farcaller/rly/wiki/Calculator-Tutorial-Part-2:-Basic-parser)
+ * [Calculator Tutorial Part 3: Advanced parser](https://github.com/farcaller/rly/wiki/Calculator-Tutorial-Part-3:-Advanced-parser)
