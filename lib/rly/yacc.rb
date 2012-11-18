@@ -51,6 +51,8 @@ module Rly
         # is already set, we just use that. Otherwise, we'll pull
         # the next token off of the lookaheadstack or from the lexer
 
+        # DBG # puts "State: #{state}"
+
         unless lookahead
           if lookaheadstack.empty?
             lookahead = @lex.next
@@ -72,6 +74,8 @@ module Rly
             # shift a symbol on the stack
             @statestack.push(t)
             state = t
+
+            # DBG # puts "Action : Shift and goto state #{t}"
             
             @symstack.push(lookahead)
             lookahead = nil
@@ -92,6 +96,12 @@ module Rly
             sym.type = pname
             sym.value = nil
 
+            # DBG # if plen
+            # DBG # puts "Action : Reduce rule [#{p}] with [#{@symstack[-plen..@symstack.length].map{|s|s.value}.join(', ')}] and goto state #{-t}"
+            # DBG # else
+            # DBG # puts "Action : Reduce rule [#{p}] with [] and goto state #{-t}"
+            # DBG # end
+
             if plen
               targ = @symstack.pop(plen)
               targ.insert(0, sym)
@@ -107,6 +117,8 @@ module Rly
                 # Call the grammar rule with our special slice object
                 @statestack.pop(plen)
                 instance_exec(*targ, &p.block)
+
+                # DBG # puts "Result : #{targ[0].value}"
 
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
@@ -139,6 +151,8 @@ module Rly
                 @statestack.pop(plen)
                 pslice[0] = instance_exec(*pslice, &p.block)
 
+                # DBG # puts "Result : #{targ[0].value}"
+
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
                 @statestack.push(state)
@@ -161,6 +175,9 @@ module Rly
           if t == 0
             n = @symstack[-1]
             result = n.value
+
+            # DBG # puts "Done   : Returning #{result}"
+
             return result
           end
         end
