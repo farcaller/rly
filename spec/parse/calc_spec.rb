@@ -3,7 +3,7 @@ require "rly"
 module CalcSpecExample
   class CalcLex < Rly::Lex
     literals '=+-*/()'
-    ignore " \t"
+    ignore " \t\n"
 
     token :NAME, /[a-zA-Z_][a-zA-Z0-9_]*/
 
@@ -12,11 +12,10 @@ module CalcSpecExample
       t
     end
 
-    token(/\n+/) { |t| t.lexer.lineno += t.value.count("\n") }
-
     on_error do |t|
       puts "Illegal character #{t.value}"
       t.lexer.pos += 1
+      nil
     end
   end
 
