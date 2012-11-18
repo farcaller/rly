@@ -294,7 +294,7 @@ module Rly
     end
 
     class << self
-      attr_accessor :rules, :grammar, :lexer_class
+      attr_accessor :rules, :grammar, :lexer_class, :prec_rules
 
       def rule(desc, &block)
         self.rules << [desc, block]
@@ -308,8 +308,30 @@ module Rly
         @rules ||= []
       end
 
+      def precedence(*prec)
+        assoc = prec.shift
+        self.prec_rules << [assoc, prec.reverse]
+      end
+
+      def prec_rules
+        @prec_rules ||= []
+      end
+
       def error_count
         3
+      end
+
+      def parsed_rules
+        @parsed_rules if @parsed_rules
+
+        @parsed_rules = []
+        rp = RuleParser.new
+        self.rules.each do |d, b|
+          rp.parse(d).each do |prod|
+            @parsed_rules << [prod, b]
+          end
+        end
+        @parsed_rules
       end
     end
   end
