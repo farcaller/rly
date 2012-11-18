@@ -9,12 +9,12 @@ describe Rly::RuleParser do
                     | expression "/" expression'
     p = Rly::RuleParser.new
 
-    p.parse(s)
+    productions = p.parse(s)
 
-    p.productions.length.should == 4
-    p.productions[0].should == [:expression, [:expression, '+', :expression]]
-    p.productions[1].should == [:expression, [:expression, '-', :expression]]
-    p.productions[2].should == [:expression, [:expression, '*', :expression]]
-    p.productions[3].should == [:expression, [:expression, '/', :expression]]
+    productions.length.should == 4
+    productions[0].should == [:expression, [:expression, '+', :expression]]
+    productions[1].should == [:expression, [:expression, '-', :expression]]
+    productions[2].should == [:expression, [:expression, '*', :expression]]
+    productions[3].should == [:expression, [:expression, '/', :expression]]
   end
 end
