@@ -2,6 +2,7 @@ require "rly/lex"
 require "rly/parse/grammar"
 require "rly/parse/yacc_production"
 require "rly/parse/yacc_symbol"
+require "rly/parse/ply_dump"
 
 module Rly
   class YaccError < RuntimeError; end
@@ -311,6 +312,12 @@ module Rly
 
       @grammar.build_lritems
 
+      if self.class.store_grammar_def
+        d = PlyDump.new(@grammar)
+        gdef = d.to_s
+        open(self.class.store_grammar_def, 'w') { |f| f.write(gdef) }
+      end
+
       @lr_table = LRTable.new(@grammar)
 
       @lr_table.parse_table
@@ -319,7 +326,11 @@ module Rly
     end
 
     class << self
-      attr_accessor :rules, :grammar, :lexer_class, :prec_rules, :error_handler
+      attr_accessor :rules, :grammar, :lexer_class, :prec_rules, :error_handler, :store_grammar_def
+
+      def store_grammar(fn)
+        @store_grammar_def = fn
+      end
 
       def rule(desc, &block)
         self.rules << [desc, block]
