@@ -16,7 +16,7 @@ module Rly
       @grammar = grammar
     end
 
-    def parse(input=nil)
+    def parse(input=nil, trace=false)
       lookahead = nil
       lookaheadstack = []
       actions = @lr_table.lr_action
@@ -51,7 +51,7 @@ module Rly
         # is already set, we just use that. Otherwise, we'll pull
         # the next token off of the lookaheadstack or from the lexer
 
-        # DBG # puts "State: #{state}"
+        puts "State  : #{state}" if trace
 
         unless lookahead
           if lookaheadstack.empty?
@@ -65,6 +65,8 @@ module Rly
           end
         end
 
+        puts "Stack  : #{(@symstack[1..-1].map{|s|s.type}.join(' ') + ' ' + lookahead.inspect).lstrip}" if trace
+
         # Check the action table
         ltype = lookahead.type
         t = actions[state][ltype]
@@ -75,7 +77,7 @@ module Rly
             @statestack.push(t)
             state = t
 
-            # DBG # puts "Action : Shift and goto state #{t}"
+            puts "Action : Shift and goto state #{t}" if trace
             
             @symstack.push(lookahead)
             lookahead = nil
@@ -96,11 +98,13 @@ module Rly
             sym.type = pname
             sym.value = nil
 
-            # DBG # if plen
-            # DBG # puts "Action : Reduce rule [#{p}] with [#{@symstack[-plen..@symstack.length].map{|s|s.value}.join(', ')}] and goto state #{-t}"
-            # DBG # else
-            # DBG # puts "Action : Reduce rule [#{p}] with [] and goto state #{-t}"
-            # DBG # end
+            if trace
+              if plen
+                puts "Action : Reduce rule [#{p}] with [#{@symstack[-plen..@symstack.length].map{|s|s.value}.join(', ')}] and goto state #{-t}"
+              else
+                puts "Action : Reduce rule [#{p}] with [] and goto state #{-t}"
+              end
+            end
 
             if plen
               targ = @symstack.pop(plen)
@@ -118,7 +122,7 @@ module Rly
                 @statestack.pop(plen)
                 instance_exec(*targ, &p.block)
 
-                # DBG # puts "Result : #{targ[0].value}"
+                puts "Result : #{targ[0].value}" if trace
 
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
@@ -151,7 +155,7 @@ module Rly
                 @statestack.pop(plen)
                 pslice[0] = instance_exec(*pslice, &p.block)
 
-                # DBG # puts "Result : #{targ[0].value}"
+                puts "Result : #{targ[0].value}" if trace
 
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
@@ -176,7 +180,7 @@ module Rly
             n = @symstack[-1]
             result = n.value
 
-            # DBG # puts "Done   : Returning #{result}"
+            puts "Done   : Returning #{result}" if trace
 
             return result
           end
