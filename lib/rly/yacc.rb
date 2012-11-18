@@ -315,7 +315,7 @@ module Rly
     end
 
     class << self
-      attr_accessor :rules, :grammar, :lexer_class, :prec_rules
+      attr_accessor :rules, :grammar, :lexer_class, :prec_rules, :error_handler
 
       def rule(desc, &block)
         self.rules << [desc, block]
