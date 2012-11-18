@@ -44,9 +44,9 @@ module CalcSpecExample
       ex.value = e1.value.send(op.value, e2.value)
     end
 
-    # rule 'expression : "-" expression %prec UMINUS' do |ex, _, e|
-    #   ex.value = - e.value
-    # end
+    rule 'expression : "-" expression %prec UMINUS' do |ex, _, e|
+      ex.value = - e.value
+    end
 
     rule 'expression : "(" expression ")"' do |ex, _, e, _|
       ex.value = e.value
@@ -91,5 +91,9 @@ describe 'Calculator' do
   it "keeps state between parses" do
     @calc.parse('magic = 42')
     @calc.parse('2 * magic').should == 84
+  end
+
+  it "follows special case precedence rules" do
+    @calc.parse('2 + - 2 + 1').should == 1
   end
 end
