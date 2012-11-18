@@ -5,6 +5,8 @@ module Rly
   class LRTable
     MAXINT = (2**(0.size * 8 -2) -1)
 
+    attr_reader :lr_action, :lr_goto, :lr_productions
+
     def initialize(grammar, method=:LALR)
       raise ArgumentError unless [:LALR, :SLR].include?(method)
 
