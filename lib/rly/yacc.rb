@@ -268,7 +268,29 @@ module Rly
 
     protected
     def grammar
-      nil #FIXME
+      return @grammar if @grammar
+
+      @grammar = Grammar.new(@lex.class.terminals)
+
+      self.class.prec_rules.each do |assoc, terms|
+        terms.each_with_index do |term, i|
+          @grammar.set_precedence(term, assoc, i)
+        end
+      end
+
+      self.class.parsed_rules.each do |prod, block|
+        @grammar.add_production(*prod, &block)
+      end
+
+      @grammar.set_start
+
+      @grammar.build_lritems
+
+      @lr_table = LRTable.new(@grammar)
+
+      @lr_table.parse_table
+
+      @grammar
     end
 
     class << self

@@ -4,13 +4,11 @@ require "rly/parse/lr_table"
 
 module Rly
   class RuleParser < Yacc
-    attr_reader :productions
-
     def self.lexer_class
       return @lexer_class if @lexer_class
 
       @lexer_class = Class.new(Lex) do
-        token :ID, /[a-z_][a-z_0-9]*/
+        token :ID, /[a-zA-Z_][a-zA-Z_0-9]*/
         token :LITERAL, /"."|'.'/ do |t|
           t.value = t.value[1]
           t
@@ -28,10 +26,11 @@ module Rly
       @grammar = Grammar.new(self.class.lexer_class.terminals)
 
       @grammar.add_production(:grammar, [:ID, ':', :rules]) do |g, pname, _, r|
-        @productions = []
+        productions = []
         r.value.each do |p|
-          @productions << [pname.value.to_sym, p]
+          productions << [pname.value.to_sym, p]
         end
+        g.value = productions
       end
       @grammar.add_production(:rules, [:rule, '|', :rules]) do |rls, r, _, rl|
         rls.value = [r.value] + rl.value
