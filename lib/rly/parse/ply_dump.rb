@@ -1,4 +1,6 @@
 require "rly/parse/lr_table"
+require "rly/version"
+require "erb"
 
 module Rly
 
@@ -17,7 +19,7 @@ module Rly
     def to_s
       fn = File.join(File.dirname(__FILE__), '..', '..', '..', 'assets', 'ply_dump.erb')
       e = ERB.new(open(fn).read)
-      e.result(TinyContext.new(g: @grammar, backlog: @backlog).get_binding)
+      e.result(TinyContext.new(g: @grammar, backlog: @backlog, ver: Rly::VERSION).get_binding)
     end
 
     def self.stub
