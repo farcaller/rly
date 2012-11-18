@@ -16,6 +16,10 @@ module Rly
       @grammar = grammar
     end
 
+    def inspect
+      "#<#{self.class} ...>"
+    end
+
     def parse(input=nil, trace=false)
       lookahead = nil
       lookaheadstack = []
