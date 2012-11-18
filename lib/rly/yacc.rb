@@ -293,14 +293,14 @@ module Rly
 
       @grammar = Grammar.new(@lex.class.terminals)
 
-      self.class.prec_rules.each do |assoc, terms|
-        terms.each_with_index do |term, i|
+      self.class.prec_rules.each do |assoc, terms, i|
+        terms.each do |term|
           @grammar.set_precedence(term, assoc, i)
         end
       end
 
-      self.class.parsed_rules.each do |prod, block|
-        @grammar.add_production(*prod, &block)
+      self.class.parsed_rules.each do |pname, p, prec, block|
+        @grammar.add_production(pname, p, prec, &block)
       end
 
       @grammar.set_start
@@ -331,7 +331,8 @@ module Rly
 
       def precedence(*prec)
         assoc = prec.shift
-        self.prec_rules << [assoc, prec.reverse]
+        count = self.prec_rules.length + 1
+        self.prec_rules << [assoc, prec, count]
       end
 
       def prec_rules
@@ -343,13 +344,13 @@ module Rly
       end
 
       def parsed_rules
-        @parsed_rules if @parsed_rules
+        return @parsed_rules if @parsed_rules
 
         @parsed_rules = []
         rp = RuleParser.new
-        self.rules.each do |d, b|
-          rp.parse(d).each do |prod|
-            @parsed_rules << [prod, b]
+        self.rules.each do |desc, block|
+          rp.parse(desc).each do |(pname, p, prec)|
+            @parsed_rules << [pname, p, prec, block]
           end
         end
         @parsed_rules

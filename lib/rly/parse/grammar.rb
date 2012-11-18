@@ -25,7 +25,7 @@ module Rly
       @start = nil
     end
 
-    def add_production(name, symbols, &block)
+    def add_production(name, symbols, enforced_prec=nil, &block)
       raise ArgumentError unless name.downcase == name
       raise ArgumentError if name == :error
 
@@ -36,7 +36,13 @@ module Rly
         end
       end
 
-      precedence = prec_for_rightmost_terminal(symbols)
+      if enforced_prec
+        precedence = @precedence[enforced_prec]
+        raise RuntimeError.new("Nothing known about the precedence of '#{enforced_prec}'") unless precedence
+        @used_precedence[precedence] = true
+      else
+        precedence = prec_for_rightmost_terminal(symbols)
+      end
 
       mapname = "#{name.to_s} -> #{symbols.to_s}"
       raise ArgumentError if @prodmap[mapname]
