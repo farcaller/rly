@@ -89,6 +89,7 @@ module Rly
     #   t = lex.next # => nil
     def input(input)
       @input << input
+      nil
     end
 
     # Processes the next token in input
@@ -249,6 +250,7 @@ module Rly
         else
           raise ArgumentError
         end
+        nil
       end
 
       # Specifies a list of one-char literals
@@ -272,6 +274,7 @@ module Rly
       #   end
       def literals(lit)
         @literals = lit
+        nil
       end
 
       # Specifies a list of one-char symbols to be ignored in input
@@ -297,6 +300,7 @@ module Rly
       #   end
       def ignore(ign)
         @ignores = ign
+        nil
       end
 
       # Specifies a block that should be called on error
@@ -325,6 +329,7 @@ module Rly
       #   end
       def on_error(&block)
         @error_block = block
+        nil
       end
     end
   end

@@ -319,10 +319,12 @@ module Rly
 
       def rule(desc, &block)
         self.rules << [desc, block]
+        nil
       end
 
       def lexer(&block)
         @lexer_class = Class.new(Lex, &block)
+        nil
       end
 
       def rules
@@ -333,6 +335,7 @@ module Rly
         assoc = prec.shift
         count = self.prec_rules.length + 1
         self.prec_rules << [assoc, prec, count]
+        nil
       end
 
       def prec_rules
