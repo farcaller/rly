@@ -105,19 +105,19 @@ module Rly
                       # Reduce/reduce conflict.   In this case, we favor the rule
                       # that was defined first in the grammar file
                       oldp = productions[-r]
-                      pp = productions[p.number]
+                      pp = productions[p.index]
                       if oldp.line > pp.line
-                        st_action[a] = -p.number
+                        st_action[a] = -p.index
                         st_actionp[a] = p
                         chosenp = pp
                         rejectp = oldp
-                        productions[p.number].reduced += 1
-                        productions[oldp.number].reduced -= 1
+                        productions[p.index].reduced += 1
+                        productions[oldp.index].reduced -= 1
                       else
                         chosenp,rejectp = oldp,pp
                       end
                       @rr_conflicts << [st, chosenp, rejectp]
-                      log.info("  ! reduce/reduce conflict for %s resolved using rule %d (%s)", a, st_actionp[a].number, st_actionp[a])
+                      log.info("  ! reduce/reduce conflict for %s resolved using rule %d (%s)", a, st_actionp[a].index, st_actionp[a])
                   else
                     raise RuntimeError("Unknown conflict in state #{st}")
                   end
@@ -128,8 +128,7 @@ module Rly
                 end
               end
             end
-          else # <-- level ok
-            # i = p.lr_index
+          else
             a = p.prod[p.lr_index+1]       # Get symbol right after the "."
             if @grammar.terminals.include?(a)
               g = lr0_goto(i, a)
