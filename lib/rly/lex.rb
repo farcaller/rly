@@ -123,16 +123,13 @@ module Rly
           next
         end
 
-        m = self.class.token_regexps.match(@input, @pos)
-        if m && ! m[0].empty?
-          # next unless m.begin(0) == @pos # FIXME
+        m = self.class.token_regexps.match(@input[@pos..-1])
 
+        if m && ! m[0].empty?
           val = nil
           type = nil
           resolved_type = nil
           m.names.each do |n|
-            next unless m.begin(n) == @pos
-
             if m[n]
               type = n.to_sym
               resolved_type = (n.start_with?('__anonymous_') ? nil : type)
@@ -143,7 +140,7 @@ module Rly
 
           if type
             tok = build_token(resolved_type, val)
-            @pos = m.end(0)
+            @pos += m.end(0)
             tok = self.class.callables[type].call(tok) if self.class.callables[type]
 
             if tok && tok.type
@@ -153,7 +150,7 @@ module Rly
             end
           end
         end
-
+        
         if self.class.literals_list[@input[@pos]]
           tok = build_token(@input[@pos], @input[@pos])
           matched = true
@@ -205,7 +202,7 @@ module Rly
           self.callables[name] = block
           
           rxs = rx.to_s
-          named_rxs = "(?<#{name}>#{rxs})"
+          named_rxs = "\\A(?<#{name}>#{rxs})"
 
           collector << named_rxs
         end
