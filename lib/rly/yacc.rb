@@ -226,14 +226,10 @@ module Rly
               end
             else
               if errtoken
-                # if hasattr(errtoken,"lineno"): lineno = lookahead.lineno
-                # else: lineno = 0
-                #if lineno:
-                #    sys.stderr.write("yacc: Syntax error at line %d, token=%s\n" % (lineno, errtoken.type))
-                #else:
-                #    sys.stderr.write("yacc: Syntax error, token=%s" % errtoken.type)
+                location_info = lookahead.location_info
+                puts "Fail   : Syntax error at #{location_info}, token='#{errtoken}'" if trace
               else
-                # sys.stderr.write("yacc: Parse error in input. EOF\n")
+                puts "Fail   : Parse error in input. EOF" if trace
                 return nil
               end
             end
