@@ -20,16 +20,18 @@ module Rly
     end
 
     def next
-      tok = super
-      unless tok
-        unless @inputstack.empty?
-          pop_file
-          tok = super
+      begin
+        tok = super
+
+        if tok
+          return tok
         else
-          tok = nil
+          unless @inputstack.empty?
+            pop_file
+            redo
+          end
         end
-      end
-      tok
+      end until tok
     end
 
     def build_token(type, value)
