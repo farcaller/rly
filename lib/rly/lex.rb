@@ -185,7 +185,7 @@ module Rly
 
     class << self
       def terminals
-        self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a
+        self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a + self.metatokens_list
       end
 
       def callables
@@ -209,6 +209,14 @@ module Rly
 
         rxss = collector.join('|')
         @token_regexps = Regexp.new(rxss)
+      end
+
+      def metatokens_list
+        @metatokens_list ||= []
+      end
+
+      def metatokens(*args)
+        @metatokens_list = args
       end
 
       # Returns the list of registered tokens
