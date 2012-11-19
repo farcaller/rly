@@ -129,7 +129,7 @@ module Rly
           next unless m
           next unless m.begin(0) == @pos
 
-          tok = LexToken.new(type, m[0], self)
+          tok = build_token(type, m[0])
 
           matched = true
 
@@ -142,7 +142,7 @@ module Rly
 
         unless matched
           if self.class.literals_list[@input[@pos]]
-            tok = LexToken.new(@input[@pos], @input[@pos], self)
+            tok = build_token(@input[@pos], @input[@pos])
 
             matched = true
 
@@ -155,7 +155,7 @@ module Rly
         unless matched
           if self.class.error_hander
             pos = @pos
-            tok = LexToken.new(:error, @input[@pos], self)
+            tok = build_token(:error, @input[@pos])
             tok = self.class.error_hander.call(tok)
             if pos == @pos
               raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
@@ -170,6 +170,9 @@ module Rly
       return nil
     end
 
+    def build_token(type, value)
+      LexToken.new(type, value, self, @pos, @lineno)
+    end
     class << self
       def terminals
         self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a
