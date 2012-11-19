@@ -212,9 +212,9 @@ module Rly
               errok = @errok
               token = @lex.next
               restart = @restart
-              errtoken.lex = @lex if errtoken
+              #errtoken.lexer = @lex if errtoken
 
-              tok = self.class.error_handler.call(errtoken)
+              tok = self.instance_exec(errtoken, &self.class.error_handler)
 
               if @errorok
                 # User must have done some kind of panic
@@ -359,6 +359,10 @@ module Rly
 
       def error_count
         3
+      end
+
+      def on_error(lambda)
+        @error_handler = lambda
       end
 
       def parsed_rules
