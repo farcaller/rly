@@ -137,7 +137,7 @@ module Rly
 
           @pos = m.end(0)
 
-          return tok if tok.type
+          return tok if tok && tok.type
         end
 
         unless matched
