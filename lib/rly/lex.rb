@@ -133,9 +133,9 @@ module Rly
 
           matched = true
 
-          tok = block.call(tok) if block
-
           @pos = m.end(0)
+
+          tok = block.call(tok) if block
 
           return tok if tok && tok.type
         end
