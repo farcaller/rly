@@ -119,7 +119,7 @@ module Rly
     def next
       while @pos < @input.length
         if self.class.ignores_list[@input[@pos]]
-          @pos += 1
+          ignore_symbol
           next
         end
 
@@ -173,6 +173,11 @@ module Rly
     def build_token(type, value)
       LexToken.new(type, value, self, @pos, @lineno)
     end
+
+    def ignore_symbol
+      @pos += 1
+    end
+
     class << self
       def terminals
         self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a
