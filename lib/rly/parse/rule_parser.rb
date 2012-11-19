@@ -49,6 +49,9 @@ module Rly
       @grammar.add_production(:rules, [:rule]) do |rl, r|
         rl.value = [r.value]
       end
+      @grammar.add_production(:rules, []) do |rl|
+        rl.value = [[]]
+      end
       @grammar.add_production(:rule, [:tokens]) do |r, tok|
         r.value = tok.value
       end
