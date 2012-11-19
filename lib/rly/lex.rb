@@ -123,49 +123,57 @@ module Rly
           next
         end
 
-        matched = false
-        self.class.tokens.each do |type, rule, block|
-          m = rule.match(@input, @pos)
-          next unless m
-          next unless m.begin(0) == @pos
+        m = self.class.token_regexps.match(@input, @pos)
+        if m && ! m[0].empty?
+          # next unless m.begin(0) == @pos # FIXME
 
-          tok = build_token(type, m[0])
+          val = nil
+          type = nil
+          resolved_type = nil
+          m.names.each do |n|
+            next unless m.begin(n) == @pos
 
-          matched = true
-
-          @pos = m.end(0)
-
-          tok = block.call(tok) if block
-
-          return tok if tok && tok.type
-        end
-
-        unless matched
-          if self.class.literals_list[@input[@pos]]
-            tok = build_token(@input[@pos], @input[@pos])
-
-            matched = true
-
-            @pos += 1
-
-            return tok
-          end
-        end
-
-        unless matched
-          if self.class.error_hander
-            pos = @pos
-            tok = build_token(:error, @input[@pos])
-            tok = self.class.error_hander.call(tok)
-            if pos == @pos
-              raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
-            else
-              return tok if tok && tok.type
+            if m[n]
+              type = n.to_sym
+              resolved_type = (n.start_with?('__anonymous_') ? nil : type)
+              val = m[n]
+              break
             end
-          else
-            raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
+          end
+
+          if type
+            tok = build_token(resolved_type, val)
+            @pos = m.end(0)
+            tok = self.class.callables[type].call(tok) if self.class.callables[type]
+
+            if tok && tok.type
+              return tok
+            else
+              next
+            end
           end
         end
+
+        if self.class.literals_list[@input[@pos]]
+          tok = build_token(@input[@pos], @input[@pos])
+          matched = true
+          @pos += 1
+          return tok
+        end
+
+        if self.class.error_hander
+          pos = @pos
+          tok = build_token(:error, @input[@pos])
+          tok = self.class.error_hander.call(tok)
+          if pos == @pos
+            raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
+          else
+            return tok if tok && tok.type
+          end
+        else
+          raise LexError.new("Illegal character '#{@input[@pos]}' at index #{@pos}")
+        end
+
       end
       return nil
     end
@@ -182,6 +190,30 @@ module Rly
       def terminals
         self.tokens.map { |t,r,b| t }.compact + self.literals_list.chars.to_a
       end
+
+      def callables
+        @callables ||= {}
+      end
+
+      def token_regexps
+        return @token_regexps if @token_regexps
+
+        collector = []
+        self.tokens.each do |name, rx, block|
+          name = "__anonymous_#{block.hash}".to_sym unless name
+
+          self.callables[name] = block
+          
+          rxs = rx.to_s
+          named_rxs = "(?<#{name}>#{rxs})"
+
+          collector << named_rxs
+        end
+
+        rxss = collector.join('|')
+        @token_regexps = Regexp.new(rxss)
+      end
+
       # Returns the list of registered tokens
       #
       # @api private
