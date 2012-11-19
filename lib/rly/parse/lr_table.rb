@@ -81,17 +81,17 @@ module Rly
                     # Need to decide on shift or reduce here
                     # By default we favor shifting. Need to add
                     # some precedence rules here.
-                    sprec, slevel = productions[st_actionp[a].number].prec
+                    sprec, slevel = productions[st_actionp[a].index].precedence
                     rprec, rlevel = precedence[a] || [:right, 0]
                     if (slevel < rlevel) || ((slevel == rlevel) && (rprec == :left))
                       # We really need to reduce here.
-                      st_action[a] = -p.number
+                      st_action[a] = -p.index
                       st_actionp[a] = p
                       if ! slevel && ! rlevel
                         log.info("  ! shift/reduce conflict for %s resolved as reduce",a)
                         @sr_conflicts << [st, a, 'reduce']
                       end
-                      productions[p.number].reduced += 1
+                      productions[p.index].reduced += 1
                     elsif (slevel == rlevel) && (rprec == :nonassoc)
                       st_action[a] = nil
                     else
