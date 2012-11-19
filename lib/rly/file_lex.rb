@@ -26,7 +26,9 @@ module Rly
         if tok
           return tok
         else
-          unless @inputstack.empty?
+          if @inputstack.empty?
+            return nil
+          else
             pop_file
             redo
           end
