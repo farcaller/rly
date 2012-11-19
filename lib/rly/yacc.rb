@@ -211,11 +211,6 @@ module Rly
             errtoken = nil if errtoken.type == :"$end"
 
             if self.class.error_handler
-              errok = @errok
-              token = @lex.next
-              restart = @restart
-              #errtoken.lexer = @lex if errtoken
-
               tok = self.instance_exec(errtoken, &self.class.error_handler)
 
               if @errorok
