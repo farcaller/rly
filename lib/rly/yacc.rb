@@ -371,7 +371,9 @@ module Rly
         @parsed_rules = []
         rp = RuleParser.new
         self.rules.each do |desc, block|
-          rp.parse(desc).each do |(pname, p, prec)|
+          rules = rp.parse(desc)
+          raise RuntimeError.new("Failed to parse rules: #{desc}") unless rules
+          rules.each do |(pname, p, prec)|
             @parsed_rules << [pname, p, prec, block]
           end
         end
