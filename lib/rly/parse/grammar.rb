@@ -45,7 +45,7 @@ module Rly
       end
 
       mapname = "#{name.to_s} -> #{symbols.to_s}"
-      raise ArgumentError if @prodmap[mapname]
+      raise ArgumentError.new("Production #{mapname} is already defined!") if @prodmap[mapname]
 
       index = @productions.count
       @nonterminals[name] = [] unless @nonterminals[name]
@@ -79,6 +79,7 @@ module Rly
     end
 
     def set_start(symbol=nil)
+      raise RuntimeError.new("No productions defined in #{self}") if @productions.empty?
       symbol = @productions[1].name unless symbol
       raise ArgumentError unless @nonterminals[symbol]
       @productions[0] = Production.new(0, :"S'", [symbol])
@@ -119,6 +120,7 @@ module Rly
       while true
         any_changes = false
         nonterminals.keys.each do |n|
+          raise RuntimeError.new("Unefined production '#{n}'") unless @prodnames[n]
           @prodnames[n].each do |p|
             _first(p.prod).each do |f|
               unless @first[n].include?(f)
