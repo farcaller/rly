@@ -22,6 +22,8 @@ module Rly
     end
 
     def parse(input=nil, trace=false)
+      @trace = trace
+
       lookahead = nil
       lookaheadstack = []
       actions = @lr_table.lr_action
@@ -56,7 +58,7 @@ module Rly
         # is already set, we just use that. Otherwise, we'll pull
         # the next token off of the lookaheadstack or from the lexer
 
-        puts "State  : #{state}" if trace
+        puts "State  : #{state}" if @trace
 
         unless lookahead
           if lookaheadstack.empty?
@@ -70,7 +72,7 @@ module Rly
           end
         end
 
-        puts "Stack  : #{(@symstack[1..-1].map{|s|s.type}.join(' ') + ' ' + lookahead.inspect).lstrip}" if trace
+        puts "Stack  : #{(@symstack[1..-1].map{|s|s.type}.join(' ') + ' ' + lookahead.inspect).lstrip}" if @trace
 
         # Check the action table
         ltype = lookahead.type
@@ -82,7 +84,7 @@ module Rly
             @statestack.push(t)
             state = t
 
-            puts "Action : Shift and goto state #{t}" if trace
+            puts "Action : Shift and goto state #{t}" if @trace
             
             @symstack.push(lookahead)
             lookahead = nil
@@ -103,9 +105,9 @@ module Rly
             sym.type = pname
             sym.value = nil
 
-            if trace
+            if @trace
               if plen
-                puts "Action : Reduce rule [#{p}] with [#{@symstack[-plen..@symstack.length].map{|s|s.value}.join(', ')}] and goto state #{-t}"
+                puts "Action : Reduce rule [#{p}] with [#{@symstack[-plen..@symstack.length].map{|s|s.inspect}.join(', ')}] and goto state #{-t}"
               else
                 puts "Action : Reduce rule [#{p}] with [] and goto state #{-t}"
               end
@@ -127,7 +129,7 @@ module Rly
                 @statestack.pop(plen)
                 instance_exec(*targ, &p.block)
 
-                puts "Result : #{targ[0].value}" if trace
+                puts "Result : #{targ[0].inspect}" if @trace
 
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
@@ -160,7 +162,7 @@ module Rly
                 @statestack.pop(plen)
                 pslice[0] = instance_exec(*pslice, &p.block)
 
-                puts "Result : #{targ[0].value}" if trace
+                puts "Result : #{targ[0].value}" if @trace
 
                 @symstack.push(sym)
                 state = goto[@statestack[-1]][pname]
@@ -185,7 +187,7 @@ module Rly
             n = @symstack[-1]
             result = n.value
 
-            puts "Done   : Returning #{result}" if trace
+            puts "Done   : Returning #{result}" if @trace
 
             return result
           end
@@ -227,9 +229,9 @@ module Rly
             else
               if errtoken
                 location_info = lookahead.location_info
-                puts "Fail   : Syntax error at #{location_info}, token='#{errtoken}'" if trace
+                puts "Fail   : Syntax error at #{location_info}, token='#{errtoken}'" if @trace
               else
-                puts "Fail   : Parse error in input. EOF" if trace
+                puts "Fail   : Parse error in input. EOF" if @trace
                 return nil
               end
             end
