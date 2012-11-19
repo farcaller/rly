@@ -7,7 +7,8 @@ module Rly
     end
 
     def inspect
-      "#<YaccSymbol #{@type} '#{@value}'>"
+      s = to_s
+      "#<YaccSymbol #{@type} '#{s.length > 20 ? s[0..20] + '...' : s}'>"
     end
   end
 end
