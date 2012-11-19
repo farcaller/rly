@@ -27,6 +27,10 @@ module Rly
       @prod.length
     end
 
+    def line
+      @line ||= 0
+    end
+
     def lr0_added
       @lr0_added ||= 0
     end
