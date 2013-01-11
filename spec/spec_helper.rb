@@ -1,5 +1,11 @@
 require "rubygems"
 require "bundler/setup"
+
+require "simplecov"
+SimpleCov.start do
+  add_filter '/spec/'
+end if ENV["COVERAGE"]
+
 begin
   require "pry-nav"
 rescue LoadError
