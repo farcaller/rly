@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/farcaller/rly.png?branch=master)](http://travis-ci.org/farcaller/rly)
+[![Gem Version](https://badge.fury.io/rb/rly.png)](http://badge.fury.io/rb/rly) [![Build Status](https://secure.travis-ci.org/farcaller/rly.png?branch=master)](http://travis-ci.org/farcaller/rly)
 
 # Rly
 
