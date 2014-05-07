@@ -4,5 +4,4 @@ rvm:
   - rbx-19mode
   - jruby-19mode
 env:
-  - COVERAGE=true
   - COVERAGE=false
