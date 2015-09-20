@@ -120,7 +120,7 @@ module Rly
       while true
         any_changes = false
         nonterminals.keys.each do |n|
-          raise RuntimeError.new("Unefined production '#{n}'") unless @prodnames[n]
+          raise RuntimeError.new("Undefined production '#{n}'") unless @prodnames[n]
           @prodnames[n].each do |p|
             _first(p.prod).each do |f|
               unless @first[n].include?(f)
