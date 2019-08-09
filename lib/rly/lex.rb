@@ -61,6 +61,8 @@ module Rly
     #   puts "#{tok.type} -> #{tok.value}" #=> "UPPERS -> WORLD"
     #   t = lex.next # => nil
     def initialize(input="")
+      @token_regexps = nil
+
       @input = input
       @pos = 0
       @lineno = 0

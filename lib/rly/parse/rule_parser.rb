@@ -4,6 +4,13 @@ require "rly/parse/lr_table"
 
 module Rly
   class RuleParser < Yacc
+
+    def initialize
+      super
+      @grammar = nil
+      @lexer_class = nil
+    end
+
     def self.lexer_class
       return @lexer_class if @lexer_class
 
