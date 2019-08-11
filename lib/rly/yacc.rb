@@ -11,6 +11,9 @@ module Rly
     attr_reader :lex, :grammar, :lr_table
 
     def initialize(lex=nil)
+      @grammar = nil
+      @parsed_rules = nil
+
       raise ArgumentError.new("No lexer available") if lex == nil && self.class.lexer_class == nil
       @lex = lex || self.class.lexer_class.new
 

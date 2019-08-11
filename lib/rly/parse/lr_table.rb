@@ -81,7 +81,7 @@ module Rly
                     # Need to decide on shift or reduce here
                     # By default we favor shifting. Need to add
                     # some precedence rules here.
-                    sprec, slevel = productions[st_actionp[a].index].precedence
+                    _, slevel = productions[st_actionp[a].index].precedence
                     rprec, rlevel = precedence[a] || [:right, 0]
                     if (slevel < rlevel) || ((slevel == rlevel) && (rprec == :left))
                       # We really need to reduce here.
@@ -149,7 +149,7 @@ module Rly
                     #   -  if precedence of reduce is same and left assoc, we reduce.
                     #   -  otherwise we shift
                     rprec, rlevel = productions[st_actionp[a].index].precedence
-                    sprec, slevel = precedence[a] || [:right, 0]
+                    _, slevel = precedence[a] || [:right, 0]
                     if (slevel > rlevel) || ((slevel == rlevel) && (rprec == :right))
                       # We decide to shift here... highest precedence to shift
                       productions[st_actionp[a].index].reduced -= 1
@@ -368,7 +368,6 @@ module Rly
     end
 
     def dr_relation(c, trans, nullable)
-      dr_set = {}
       state, n = trans
       terms = []
 
