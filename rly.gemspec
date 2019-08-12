@@ -10,7 +10,8 @@ Gem::Specification.new do |gem|
   gem.email         = ["farcaller@gmail.com"]
   gem.description   = "A simple ruby implementation of lex and yacc, based on Python's ply"
   gem.summary       = "A simple ruby implementation of lex and yacc, based on Python's ply"
-  gem.homepage      = ""
+  gem.licenses      = ["MIT"]
+  gem.homepage      = "https://github.com/farcaller/rly"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
