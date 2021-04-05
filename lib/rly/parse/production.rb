@@ -1,7 +1,8 @@
 module Rly
   class Production
-    attr_reader :index, :name, :prod, :precedence, :block, :usyms, :line
-    attr_accessor :lr_items, :lr_next, :lr0_added, :reduced
+    attr_reader :index, :name, :prod, :precedence, :block, :usyms
+    attr_accessor :lr_items, :lr_next
+    attr_writer :lr0_added, :reduced
 
     # FIXME line!!!
     def initialize(index, name, prod, precedence=[:right, 0], block=nil)

@@ -1,4 +1,3 @@
-require "rly/parse/lr_table"
 require "rly/version"
 require "erb"
 

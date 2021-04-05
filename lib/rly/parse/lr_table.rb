@@ -3,7 +3,7 @@ require "rly/parse/ply_dump"
 
 module Rly
   class LRTable
-    MAXINT = (2**(0.size * 8 -2) -1)
+    MAXINT = (2 ** (0.size * 8 - 2) - 1)
 
     attr_reader :lr_action, :lr_goto, :lr_productions
 

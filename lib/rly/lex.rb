@@ -155,7 +155,6 @@ module Rly
         
         if self.class.literals_list[@input[@pos]]
           tok = build_token(@input[@pos], @input[@pos])
-          matched = true
           @pos += 1
           return tok
         end
