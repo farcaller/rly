@@ -8,7 +8,7 @@ module Rly
   class YaccError < RuntimeError; end
 
   class Yacc
-    attr_reader :lex, :grammar, :lr_table
+    attr_reader :lex, :lr_table
 
     def initialize(lex=nil)
       @grammar = nil
@@ -322,7 +322,8 @@ module Rly
     end
 
     class << self
-      attr_accessor :rules, :grammar, :lexer_class, :prec_rules, :error_handler, :store_grammar_def
+      attr_accessor :grammar, :lexer_class, :error_handler, :store_grammar_def
+      attr_writer :rules, :prec_rules
 
       def store_grammar(fn)
         @store_grammar_def = fn
